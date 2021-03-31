@@ -4,28 +4,38 @@
 // The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var imagemin = require('imagemin');
-var imageminWebp = require('imagemin-webp');
-var loaderUtils = require('loader-utils');
+const imagemin = require('imagemin');
+const imageminWebp = require('imagemin-webp');
+const loaderUtils = require('loader-utils');
 
 module.exports = function (content) {
   this.cacheable && this.cacheable();
 
-  var query = loaderUtils.getOptions(this) || {};
-  var configKey = query.config || 'webpLoader';
-  var options = this.options && this.options[configKey] || {};
-  var config = Object.assign({}, options, query);
+  const options = loaderUtils.getOptions(this) || {};
 
-  var callback = this.async();
+  const callback = this.async();
 
-  if (this.debug === true && config.bypassOnDebug === true) {
+  const copy = new Buffer()
+
+  content.copy(copy)
+
+  if (this.debug === true && options.bypassOnDebug === true) {
     return callback(null, content);
   } else {
     imagemin
       .buffer(content,{
         plugins: [imageminWebp(config)]
       })
-      .then(function(data){
+      .then(function(data) {
+        if (options.emitBeforeFile) {
+          const name = loaderUtils.interpolateName(this, options.emitBeforeFile, {
+            context,
+            data,
+            regExp: options.regExp
+          });
+          this.emitFile(name, copy);
+        }
+
         callback(null, data);
       })
       .catch(function(err){
