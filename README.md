@@ -40,20 +40,6 @@ loaders: [
 ]
 ```
 
-Normally you don't want to convert all of your images to WebP format, you just want to make alternate versions. You can use [multi-loader](https://github.com/webpack-contrib/multi-loader) to achieve it:
-
-```javascript
-loaders: [
-  {
-    test: /\.(jpe?g|png)$/i,
-    loader: multi(
-      'file-loader?name=[name].[ext].webp!webp-loader?{quality: 95}'
-      'file-loader?name=[name].[ext]',
-    )
-  },
-]
-```
-
 ## Options
 
 For all possible options please visit "API" section of the official [imagemin-webp README](https://github.com/imagemin/imagemin-webp#imageminwebpoptions).
